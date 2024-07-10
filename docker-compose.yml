@@ -1,0 +1,6 @@
+﻿services:
+  mvc:
+    image: mvc
+    build:
+      context: .
+      dockerfile: MVC/Dockerfile
