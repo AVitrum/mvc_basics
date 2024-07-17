@@ -15,7 +15,7 @@ public class Seed
 
             if (!context.Clubs.Any())
             {
-                context.Clubs.AddRange(new List<Club>()
+                context.Clubs.AddRange(new List<Club>
                 {
                     new()
                     {
@@ -74,7 +74,7 @@ public class Seed
             }
             //Races
             if (context.Races.Any()) return;
-            context.Races.AddRange(new List<Race>()
+            context.Races.AddRange(new List<Race>
             {
                 new()
                 {

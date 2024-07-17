@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MVC.Data;
+using MVC.Interfaces;
 using MVC.Models;
 
 namespace MVC.Controllers
@@ -9,18 +10,19 @@ namespace MVC.Controllers
     public class RaceController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IRaceRepository _raceRepository;
 
-        public RaceController(AppDbContext context)
+        public RaceController(AppDbContext context, IRaceRepository raceRepository)
         {
             _context = context;
+            _raceRepository = raceRepository;
         }
 
         // GET: Race
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.Races.Include(
-                r => r.Address).Include(r => r.AppUser);
-            return View(await appDbContext.ToListAsync());
+            var races = await _raceRepository.GetAll();
+            return View(races);
         }
 
         // GET: Race/Details/5
@@ -31,15 +33,7 @@ namespace MVC.Controllers
                 return NotFound();
             }
 
-            var race = await _context.Races
-                .Include(r => r.Address)
-                .Include(r => r.AppUser)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (race == null)
-            {
-                return NotFound();
-            }
-
+            var race = await _raceRepository.GetById(id.Value);
             return View(race);
         }
 
@@ -56,12 +50,11 @@ namespace MVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Image,AddressId,RaceCategory,AppUserId")] Race race)
+        public ActionResult Create([Bind("Id,Title,Description,Image,AddressId,RaceCategory,AppUserId")] Race race)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(race);
-                await _context.SaveChangesAsync();
+                _raceRepository.Add(race);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["AddressId"] = new SelectList(_context.Addresses, "Id", "Id", race.AddressId);
@@ -132,10 +125,7 @@ namespace MVC.Controllers
                 return NotFound();
             }
 
-            var race = await _context.Races
-                .Include(r => r.Address)
-                .Include(r => r.AppUser)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var race = await _raceRepository.GetById(id.Value);
             if (race == null)
             {
                 return NotFound();

@@ -1,7 +1,7 @@
-@model MVC.Models.Race
+@model MVC.Models.Club
 
 @{
-Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container">
@@ -9,12 +9,12 @@ Layout = "~/Views/Shared/_Layout.cshtml";
         Page Heading
         <small>Secondary Text</small>
     </h1>
-
+    
     <div class="row">
         <div class="col-md-8">
             <img class="img-fluid" src="@Model.Image" alt=""/>
         </div>
-
+        
         <div class="col-md-4">
             <h3 class="my-3">@Model.Title</h3>
             <p>@Model.Description</p>
@@ -22,12 +22,12 @@ Layout = "~/Views/Shared/_Layout.cshtml";
             <ul>
                 <li>@Model.Address.City</li>
                 <li>@Model.Address.State</li>
-                <li>@Model.RaceCategory</li>
+                <li>@Model.ClubCategory</li>
             </ul>
         </div>
         
     </div>
-
+    
     <h3 class="my-4">Related project</h3>
     
     <div class="row">

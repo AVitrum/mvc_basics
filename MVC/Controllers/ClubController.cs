@@ -1,23 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
-using MVC.Data;
+using MVC.Interfaces;
 
 namespace MVC.Controllers
 {
     public class ClubController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly IClubRepository _clubRepository;
 
-        public ClubController(AppDbContext context)
+        public ClubController(IClubRepository clubRepository)
         {
-            _context = context;
+            _clubRepository = clubRepository;
         }
 
         // GET: ClubController
-        public ActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var clubs = _context.Clubs.ToList();
+            var clubs = await _clubRepository.GetAll();
             return View(clubs);
         }
 
+        //GET: ClubController/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            
+            var club = await _clubRepository.GetById(id.Value);
+            return View(club);
+        }
     }
 }
