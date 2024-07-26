@@ -22,12 +22,12 @@ public class RaceRepository : IRaceRepository
             .ToListAsync();
     }
 
-    public async Task<Race> GetById(int id)
+    public async Task<Race> GetByIdAsync(int id)
     {
         return await _context.Races
             .Include(c => c.Address)
             .Include(c => c.AppUser)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id) ?? throw new Exception();
     }
 
     public async Task<IEnumerable<Race>> GetAllRacesByCity(string city)
@@ -41,9 +41,22 @@ public class RaceRepository : IRaceRepository
         return Save();
     }
 
+    public async Task<bool> AddAsync(Race race)
+    {
+        await _context.AddAsync(race);
+        return await SaveAsync();
+    }
+
     public bool Update(Race race)
     {
-        throw new NotImplementedException();
+        _context.Update(race);
+        return Save();
+    }
+
+    public async Task<bool> UpdateAsync(Race userRace)
+    {
+        _context.Update(userRace);
+        return await SaveAsync();
     }
 
     public bool Delete(Race race)
@@ -55,6 +68,12 @@ public class RaceRepository : IRaceRepository
     public bool Save()
     {
         var saved = _context.SaveChanges();
+        return saved > 0;
+    }
+
+    public async Task<bool> SaveAsync()
+    {
+        var saved = await _context.SaveChangesAsync();
         return saved > 0;
     }
 }

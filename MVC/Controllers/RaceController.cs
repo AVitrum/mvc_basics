@@ -1,157 +1,164 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using MVC.Data;
 using MVC.Interfaces;
 using MVC.Models;
+using MVC.ViewModels;
 
-namespace MVC.Controllers
+namespace MVC.Controllers;
+public class RaceController : Controller
 {
-    public class RaceController : Controller
+    private readonly AppDbContext _context;
+    private readonly IRaceRepository _raceRepository;
+    private readonly IPhotoService _photoService;
+    
+    public RaceController(AppDbContext context, IRaceRepository raceRepository, IPhotoService photoService)
     {
-        private readonly AppDbContext _context;
-        private readonly IRaceRepository _raceRepository;
+        _context = context;
+        _raceRepository = raceRepository;
+        _photoService = photoService;
+    }
 
-        public RaceController(AppDbContext context, IRaceRepository raceRepository)
+    // GET: Race
+    public async Task<IActionResult> Index()
+    {
+        var races = await _raceRepository.GetAll();
+        return View(races);
+    }
+
+    // GET: Race/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null)
         {
-            _context = context;
-            _raceRepository = raceRepository;
+            return NotFound();
         }
 
-        // GET: Race
-        public async Task<IActionResult> Index()
+        var race = await _raceRepository.GetByIdAsync(id.Value);
+        return View(race);
+    }
+
+    // GET: Race/Create
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    // POST: Race/Create
+    [HttpPost]
+    public async Task<IActionResult> Create(CreateRaceViewModel createRaceViewModel)
+    {
+        if (ModelState.IsValid)
         {
-            var races = await _raceRepository.GetAll();
-            return View(races);
-        }
-
-        // GET: Race/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var result = await _photoService.AddPhotoAsync(createRaceViewModel.Image);
+            
+            var race = new Race
             {
-                return NotFound();
-            }
-
-            var race = await _raceRepository.GetById(id.Value);
-            return View(race);
-        }
-
-        // GET: Race/Create
-        public IActionResult Create()
-        {
-            ViewData["AddressId"] = new SelectList(_context.Addresses, "Id", "Id");
-            ViewData["AppUserId"] = new SelectList(_context.Set<AppUser>(), "Id", "Id");
-            return View();
-        }
-
-        // POST: Race/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("Id,Title,Description,Image,AddressId,RaceCategory,AppUserId")] Race race)
-        {
-            if (ModelState.IsValid)
-            {
-                _raceRepository.Add(race);
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["AddressId"] = new SelectList(_context.Addresses, "Id", "Id", race.AddressId);
-            ViewData["AppUserId"] = new SelectList(_context.Set<AppUser>(), "Id", "Id", race.AppUserId);
-            return View(race);
-        }
-
-        // GET: Race/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var race = await _context.Races.FindAsync(id);
-            if (race == null)
-            {
-                return NotFound();
-            }
-            ViewData["AddressId"] = new SelectList(_context.Addresses, "Id", "Id", race.AddressId);
-            ViewData["AppUserId"] = new SelectList(_context.Set<AppUser>(), "Id", "Id", race.AppUserId);
-            return View(race);
-        }
-
-        // POST: Race/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Image,AddressId,RaceCategory,AppUserId")] Race race)
-        {
-            if (id != race.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                Title = createRaceViewModel.Title,
+                Description = createRaceViewModel.Description,
+                Image = result.Url.ToString(),
+                RaceCategory = createRaceViewModel.RaceCategory,
+                Address = new Address
                 {
-                    _context.Update(race);
-                    await _context.SaveChangesAsync();
+                    State = createRaceViewModel.Address.State,
+                    City = createRaceViewModel.Address.City,
+                    Street = createRaceViewModel.Address.Street
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RaceExists(race.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["AddressId"] = new SelectList(_context.Addresses, "Id", "Id", race.AddressId);
-            ViewData["AppUserId"] = new SelectList(_context.Set<AppUser>(), "Id", "Id", race.AppUserId);
-            return View(race);
-        }
-
-        // GET: Race/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var race = await _raceRepository.GetById(id.Value);
-            if (race == null)
-            {
-                return NotFound();
-            }
-
-            return View(race);
-        }
-
-        // POST: Race/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var race = await _context.Races.FindAsync(id);
-            if (race != null)
-            {
-                _context.Races.Remove(race);
-            }
-
-            await _context.SaveChangesAsync();
+            };
+            await _raceRepository.AddAsync(race);
             return RedirectToAction(nameof(Index));
         }
+        ModelState.AddModelError("", "Please fill all the required fields");
+        return View(createRaceViewModel);
+    }
 
-        private bool RaceExists(int id)
+    // GET: Race/Edit/5
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null)
         {
-            return _context.Races.Any(e => e.Id == id);
+            return NotFound();
         }
+        
+        var race = await _raceRepository.GetByIdAsync(id.Value);
+        
+        var raceVm = new EditRaceViewModel
+        {
+            Id = race.Id,
+            Title = race.Title,
+            Description = race.Description,
+            Url = race.Image,
+            RaceCategory = race.RaceCategory,
+            AddressId = race.AddressId,
+            Address = race.Address,
+        };
+        
+        return View(raceVm);
+    }
+    
+    // POST: Club/Edit/5
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, EditRaceViewModel raceVm)
+    {
+        if (!ModelState.IsValid)
+        {
+            ModelState.AddModelError("", "Failed to edit club due to invalid model state.");
+            return View("Edit", raceVm);
+        }
+
+        var userRace = await _raceRepository.GetByIdAsync(id);
+
+        if (raceVm.Image != null)
+        {
+            var photoResult = await _photoService.AddPhotoAsync(raceVm.Image);
+            if (photoResult.Error != null)
+            {
+                ModelState.AddModelError("Image", "Photo upload failed: " + photoResult.Error.Message);
+                return View("Edit", raceVm);
+            }
+
+            if (!string.IsNullOrEmpty(userRace.Image))
+            {
+                _ = _photoService.DeletePhotoAsync(userRace.Image);
+            }
+
+            userRace.Image = photoResult.Url.ToString();
+        }
+
+        userRace.Title = raceVm.Title;
+        userRace.Description = raceVm.Description;
+        userRace.RaceCategory = raceVm.RaceCategory;
+        userRace.AddressId = raceVm.AddressId;
+        userRace.Address = raceVm.Address;
+
+        await _raceRepository.UpdateAsync(userRace);
+        return RedirectToAction(nameof(Index));
+    }
+
+    // GET: Race/Delete/5
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var race = await _raceRepository.GetByIdAsync(id.Value);
+
+        return View(race);
+    }
+
+    // POST: Race/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var race = await _context.Races.FindAsync(id);
+        if (race != null)
+        {
+            _context.Races.Remove(race);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
     }
 }
