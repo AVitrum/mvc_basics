@@ -13,6 +13,7 @@ public interface IClubRepository
     bool Update(Club club);
     Task<bool> UpdateAsync(Club club);
     bool Delete(Club club);
+    Task<bool> DeleteAsync(Club club);
     bool Save();
     Task<bool> SaveAsync();
 }

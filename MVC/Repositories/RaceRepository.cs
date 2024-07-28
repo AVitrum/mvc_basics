@@ -65,6 +65,12 @@ public class RaceRepository : IRaceRepository
         return Save();
     }
 
+    public async Task<bool> DeleteAsync(Race race)
+    {
+        _context.Remove(race);
+        return await SaveAsync();
+    }
+
     public bool Save()
     {
         var saved = _context.SaveChanges();

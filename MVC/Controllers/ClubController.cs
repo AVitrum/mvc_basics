@@ -131,4 +131,30 @@ public class ClubController : Controller
         await _clubRepository.UpdateAsync(userClub);
         return RedirectToAction(nameof(Index));
     }
+    
+    // GET: Club/Delete/5
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
+        var club = await _clubRepository.GetByIdAsync(id.Value);
+        return View(club);
+    }
+
+    [HttpPost, ActionName("DeleteClub")]
+    public async Task<IActionResult> DeleteClub(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        
+        var club = await _clubRepository.GetByIdAsync(id.Value);
+        
+        await _clubRepository.DeleteAsync(club);
+        return RedirectToAction(nameof(Index));
+    }
 }

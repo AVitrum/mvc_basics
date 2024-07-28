@@ -60,7 +60,13 @@ public class ClubRepository : IClubRepository
         _context.Remove(club);
         return Save();
     }
-    
+
+    public async Task<bool> DeleteAsync(Club club)
+    {
+        _context.Remove(club);
+        return await SaveAsync();
+    }
+
     public bool Save()
     {
         var saved = _context.SaveChanges();

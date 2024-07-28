@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MVC.Data;
 using MVC.Interfaces;
 using MVC.Models;
 using MVC.ViewModels;
@@ -7,13 +6,11 @@ using MVC.ViewModels;
 namespace MVC.Controllers;
 public class RaceController : Controller
 {
-    private readonly AppDbContext _context;
     private readonly IRaceRepository _raceRepository;
     private readonly IPhotoService _photoService;
     
-    public RaceController(AppDbContext context, IRaceRepository raceRepository, IPhotoService photoService)
+    public RaceController(IRaceRepository raceRepository, IPhotoService photoService)
     {
-        _context = context;
         _raceRepository = raceRepository;
         _photoService = photoService;
     }
@@ -148,17 +145,17 @@ public class RaceController : Controller
     }
 
     // POST: Race/Delete/5
-    [HttpPost, ActionName("Delete")]
+    [HttpPost, ActionName("DeleteRace")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int? id)
     {
-        var race = await _context.Races.FindAsync(id);
-        if (race != null)
+        if (id == null)
         {
-            _context.Races.Remove(race);
+            return NotFound();
         }
-
-        await _context.SaveChangesAsync();
+        
+        var race = await _raceRepository.GetByIdAsync(id.Value);
+        await _raceRepository.DeleteAsync(race);
         return RedirectToAction(nameof(Index));
     }
 }

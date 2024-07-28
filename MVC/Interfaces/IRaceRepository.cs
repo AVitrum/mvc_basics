@@ -13,6 +13,7 @@ public interface IRaceRepository
     bool Update(Race race);
     Task<bool> UpdateAsync(Race userRace);
     bool Delete(Race race);
+    Task<bool> DeleteAsync(Race race);
     bool Save();
     Task<bool> SaveAsync();
 }
