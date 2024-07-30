@@ -8,7 +8,7 @@ public class RaceController : Controller
 {
     private readonly IRaceRepository _raceRepository;
     private readonly IPhotoService _photoService;
-    
+
     public RaceController(IRaceRepository raceRepository, IPhotoService photoService)
     {
         _raceRepository = raceRepository;
