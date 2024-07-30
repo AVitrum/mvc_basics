@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MVC.Data;
+using MVC.Helpers;
 using MVC.Interfaces;
 using MVC.Models;
 
@@ -18,27 +19,27 @@ public class DashboardRepository : IDashboardRepository
     
     public async Task<List<Race>> GetAllUserRacesAsync()
     {
-        var currentUser = _httpContextAccessor.HttpContext?.User;
+        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
         
-        if (currentUser == null)
+        if (currentUserId is null)
         {
             return [];
         }
         
-        var userRaces = await _context.Races.Where(r => r.AppUserId == currentUser.ToString()).ToListAsync();
+        var userRaces = await _context.Races.Where(r => r.AppUserId == currentUserId).ToListAsync();
         return userRaces;
     }
 
     public async Task<List<Club>> GetAllUserClubsAsync()
     {
-        var currentUser = _httpContextAccessor.HttpContext?.User;
+        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
         
-        if (currentUser == null)
+        if (currentUserId is null)
         {
             return [];
         }
         
-        var userClubs = await _context.Clubs.Where(r => r.AppUserId == currentUser.ToString()).ToListAsync();
+        var userClubs = await _context.Clubs.Where(r => r.AppUserId == currentUserId).ToListAsync();
         return userClubs;
     }
 }

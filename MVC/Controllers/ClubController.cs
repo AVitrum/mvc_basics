@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MVC.Helpers;
 using MVC.Interfaces;
 using MVC.Models;
 using MVC.ViewModels;
@@ -9,11 +10,13 @@ public class ClubController : Controller
 {
     private readonly IClubRepository _clubRepository;
     private readonly IPhotoService _photoService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     
-    public ClubController(IClubRepository clubRepository, IPhotoService photoService)
+    public ClubController(IClubRepository clubRepository, IPhotoService photoService, IHttpContextAccessor httpContextAccessor)
     {
         _clubRepository = clubRepository;
         _photoService = photoService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     // GET: ClubController
@@ -26,7 +29,7 @@ public class ClubController : Controller
     //GET: ClubController/Details/5
     public async Task<IActionResult> Details(int? id)
     {
-        if (id == null)
+        if (id is null)
         {
             return NotFound();
         }
@@ -38,7 +41,14 @@ public class ClubController : Controller
     // GET: Club/Create
     public IActionResult Create()
     {
-        return View();
+        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
+        if (currentUserId is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var createClubViewModel = new CreateClubViewModel { AppUserId = currentUserId };
+        return View(createClubViewModel);
     }
     
     // POST: Club/Create
@@ -55,6 +65,7 @@ public class ClubController : Controller
                 Description = createClubViewModel.Description,
                 Image = result.Url.ToString(),
                 ClubCategory = createClubViewModel.ClubCategory,
+                AppUserId = createClubViewModel.AppUserId,
                 Address = new Address
                 {
                     State = createClubViewModel.Address.State,

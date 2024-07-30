@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MVC.Helpers;
 using MVC.Interfaces;
 using MVC.Models;
 using MVC.ViewModels;
@@ -8,11 +9,13 @@ public class RaceController : Controller
 {
     private readonly IRaceRepository _raceRepository;
     private readonly IPhotoService _photoService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public RaceController(IRaceRepository raceRepository, IPhotoService photoService)
+    public RaceController(IRaceRepository raceRepository, IPhotoService photoService, IHttpContextAccessor httpContextAccessor)
     {
         _raceRepository = raceRepository;
         _photoService = photoService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     // GET: Race
@@ -37,7 +40,14 @@ public class RaceController : Controller
     // GET: Race/Create
     public IActionResult Create()
     {
-        return View();
+        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
+        if (currentUserId is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+        
+        var createRaceViewModel = new CreateRaceViewModel{ AppUserId = currentUserId };
+        return View(createRaceViewModel);
     }
 
     // POST: Race/Create
@@ -54,6 +64,7 @@ public class RaceController : Controller
                 Description = createRaceViewModel.Description,
                 Image = result.Url.ToString(),
                 RaceCategory = createRaceViewModel.RaceCategory,
+                AppUserId = createRaceViewModel.AppUserId,
                 Address = new Address
                 {
                     State = createRaceViewModel.Address.State,
