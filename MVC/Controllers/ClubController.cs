@@ -19,14 +19,14 @@ public class ClubController : Controller
         _httpContextAccessor = httpContextAccessor;
     }
 
-    // GET: ClubController
+    // GET: Club
     public async Task<IActionResult> Index()
     {
         var clubs = await _clubRepository.GetAll();
         return View(clubs);
     }
 
-    //GET: ClubController/Details/5
+    //GET: Club/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id is null)
@@ -155,6 +155,7 @@ public class ClubController : Controller
         return View(club);
     }
 
+    // POST: Club/Delete/5
     [HttpPost, ActionName("DeleteClub")]
     public async Task<IActionResult> DeleteClub(int? id)
     {
