@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MVC.Interfaces;
+using MVC.Models;
 using MVC.ViewModels;
 
 namespace MVC.Controllers;
@@ -16,8 +17,8 @@ public class DashboardController : Controller
     // GET: Dashboard
     public async Task<IActionResult> Index()
     {
-        var userRaces = await _dashboardRepository.GetAllUserRacesAsync();
-        var userClubs = await _dashboardRepository.GetAllUserClubsAsync();
+        List<Race> userRaces = await _dashboardRepository.GetAllUserRacesAsync();
+        List<Club> userClubs = await _dashboardRepository.GetAllUserClubsAsync();
 
         var dashboardViewModel = new DashboardViewModal
         {

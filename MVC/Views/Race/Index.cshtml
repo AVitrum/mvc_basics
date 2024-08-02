@@ -28,7 +28,7 @@
                                        class="btn btn-sm btn-outline-secondary">
                                         View
                                     </a>
-                                    @if (User.Identity.IsAuthenticated && User.IsInRole(UserRoles.Admin))
+                                    @if (User.Identity is { IsAuthenticated: true } && User.IsInRole(UserRoles.Admin))
                                     {
                                         <a asp-controller="Race" asp-action="Edit" asp-route-id="@item.Id" type="button" class="btn btn-sm btn-outline-secondary">Edit</a>
                                         <a asp-controller="Race" asp-action="Delete" asp-route-id="@item.Id" type="button" class="btn btn-sm btn-outline-secondary">Delete</a>

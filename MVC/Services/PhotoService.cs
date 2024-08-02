@@ -22,7 +22,7 @@ public class PhotoService : IPhotoService
 
         if (file.Length <= 0) return uploadResult;
         
-        await using var stream = file.OpenReadStream();
+        await using Stream stream = file.OpenReadStream();
         var uploadParams = new ImageUploadParams
         {
             File = new FileDescription(file.FileName, stream),

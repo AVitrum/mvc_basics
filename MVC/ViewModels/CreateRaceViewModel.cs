@@ -5,11 +5,11 @@ namespace MVC.ViewModels;
 
 public class CreateRaceViewModel
 {
-    public int Id { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public IFormFile Image { get; set; }
-    public RaceCategory RaceCategory { get; set; }
-    public Address Address { get; set; }
-    public string AppUserId { get; set; }
+    public int Id { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public string Description { get; init; } = string.Empty;
+    public IFormFile Image { get; init; } = null!;
+    public RaceCategory RaceCategory { get; init; }
+    public Address Address { get; init; } = new();
+    public string AppUserId { get; init; } = string.Empty;
 }

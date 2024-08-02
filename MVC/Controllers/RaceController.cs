@@ -1,3 +1,4 @@
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Mvc;
 using MVC.Helpers;
 using MVC.Interfaces;
@@ -21,7 +22,7 @@ public class RaceController : Controller
     // GET: Race
     public async Task<IActionResult> Index()
     {
-        var races = await _raceRepository.GetAll();
+        IEnumerable<Race> races = await _raceRepository.GetAll();
         return View(races);
     }
 
@@ -33,14 +34,14 @@ public class RaceController : Controller
             return NotFound();
         }
 
-        var race = await _raceRepository.GetByIdAsync(id.Value);
+        Race race = await _raceRepository.GetByIdAsync(id.Value);
         return View(race);
     }
 
     // GET: Race/Create
     public IActionResult Create()
     {
-        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
+        string? currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
         if (currentUserId is null)
         {
             return RedirectToAction(nameof(Index));
@@ -56,7 +57,7 @@ public class RaceController : Controller
     {
         if (ModelState.IsValid)
         {
-            var result = await _photoService.AddPhotoAsync(createRaceViewModel.Image);
+            ImageUploadResult result = await _photoService.AddPhotoAsync(createRaceViewModel.Image);
             
             var race = new Race
             {
@@ -87,7 +88,7 @@ public class RaceController : Controller
             return NotFound();
         }
         
-        var race = await _raceRepository.GetByIdAsync(id.Value);
+        Race race = await _raceRepository.GetByIdAsync(id.Value);
         
         var raceVm = new EditRaceViewModel
         {
@@ -113,11 +114,11 @@ public class RaceController : Controller
             return View("Edit", raceVm);
         }
 
-        var userRace = await _raceRepository.GetByIdAsync(id);
+        Race userRace = await _raceRepository.GetByIdAsync(id);
 
         if (raceVm.Image != null)
         {
-            var photoResult = await _photoService.AddPhotoAsync(raceVm.Image);
+            ImageUploadResult photoResult = await _photoService.AddPhotoAsync(raceVm.Image);
             if (photoResult.Error != null)
             {
                 ModelState.AddModelError("Image", "Photo upload failed: " + photoResult.Error.Message);
@@ -150,8 +151,7 @@ public class RaceController : Controller
             return NotFound();
         }
 
-        var race = await _raceRepository.GetByIdAsync(id.Value);
-
+        Race race = await _raceRepository.GetByIdAsync(id.Value);
         return View(race);
     }
 
@@ -165,7 +165,7 @@ public class RaceController : Controller
             return NotFound();
         }
         
-        var race = await _raceRepository.GetByIdAsync(id.Value);
+        Race race = await _raceRepository.GetByIdAsync(id.Value);
         await _raceRepository.DeleteAsync(race);
         return RedirectToAction(nameof(Index));
     }

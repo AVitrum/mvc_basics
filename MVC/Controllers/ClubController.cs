@@ -1,3 +1,4 @@
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Mvc;
 using MVC.Helpers;
 using MVC.Interfaces;
@@ -22,7 +23,7 @@ public class ClubController : Controller
     // GET: Club
     public async Task<IActionResult> Index()
     {
-        var clubs = await _clubRepository.GetAll();
+        IEnumerable<Club> clubs = await _clubRepository.GetAll();
         return View(clubs);
     }
 
@@ -34,14 +35,14 @@ public class ClubController : Controller
             return NotFound();
         }
         
-        var club = await _clubRepository.GetByIdAsync(id.Value);
+        Club club = await _clubRepository.GetByIdAsync(id.Value);
         return View(club);
     }
 
     // GET: Club/Create
     public IActionResult Create()
     {
-        var currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
+        string? currentUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
         if (currentUserId is null)
         {
             return RedirectToAction(nameof(Index));
@@ -57,7 +58,7 @@ public class ClubController : Controller
     {
         if (ModelState.IsValid)
         {
-            var result = await _photoService.AddPhotoAsync(createClubViewModel.Image);
+            ImageUploadResult result = await _photoService.AddPhotoAsync(createClubViewModel.Image);
             
             var club = new Club
             {
@@ -88,7 +89,7 @@ public class ClubController : Controller
             return NotFound();
         }
         
-        var club = await _clubRepository.GetByIdAsync(id.Value);
+        Club club = await _clubRepository.GetByIdAsync(id.Value);
         
         var clubViewModel = new EditClubViewModel
         {
@@ -114,11 +115,11 @@ public class ClubController : Controller
             return View("Edit", editClubViewModel);
         }
 
-        var userClub = await _clubRepository.GetByIdAsync(id);
+        Club userClub = await _clubRepository.GetByIdAsync(id);
 
         if (editClubViewModel.Image != null)
         {
-            var photoResult = await _photoService.AddPhotoAsync(editClubViewModel.Image);
+            ImageUploadResult photoResult = await _photoService.AddPhotoAsync(editClubViewModel.Image);
             if (photoResult.Error != null)
             {
                 ModelState.AddModelError("Image", "Photo upload failed: " + photoResult.Error.Message);
@@ -151,7 +152,7 @@ public class ClubController : Controller
             return NotFound();
         }
         
-        var club = await _clubRepository.GetByIdAsync(id.Value);
+        Club club = await _clubRepository.GetByIdAsync(id.Value);
         return View(club);
     }
 
@@ -164,7 +165,7 @@ public class ClubController : Controller
             return NotFound();
         }
         
-        var club = await _clubRepository.GetByIdAsync(id.Value);
+        Club club = await _clubRepository.GetByIdAsync(id.Value);
         
         await _clubRepository.DeleteAsync(club);
         return RedirectToAction(nameof(Index));

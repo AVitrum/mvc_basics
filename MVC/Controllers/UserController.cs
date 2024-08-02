@@ -18,8 +18,9 @@ public class UserController : Controller
     // GET: /users
     public async Task<IActionResult> Index()
     {
-        var users = await _userRepository.GetAllUsersAsync();
+        IEnumerable<AppUser> users = await _userRepository.GetAllUsersAsync();
         List<UserViewModel> result = [];
+        
         foreach (var user in users)
         {
             var userViewModel = new UserViewModel
@@ -38,7 +39,7 @@ public class UserController : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> Details(string id)
     {
-        var user = await _userRepository.GetUserByIdAsync(id);
+        AppUser user = await _userRepository.GetUserByIdAsync(id);
         var userViewModel = new UserViewModel
         {
             Id = user.Id,

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MVC.Data;
 using MVC.Models;
 using MVC.ViewModels;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace MVC.Controllers;
 
@@ -10,14 +11,11 @@ public class AccountController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
-    private readonly AppDbContext _context;
 
-    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-        AppDbContext context)
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
     {
         _userManager = userManager;
         _signInManager = signInManager;
-        _context = context;
     }
 
     // GET: Account/Login
@@ -36,21 +34,21 @@ public class AccountController : Controller
             return View(loginViewModel);
         }
 
-        var user = await _userManager.FindByEmailAsync(loginViewModel.EmailAddress);
+        AppUser? user = await _userManager.FindByEmailAsync(loginViewModel.EmailAddress);
         if (user == null)
         {
             TempData["Error"] = "Wrong email or password. Please try again.";
             return View(loginViewModel);
         }
 
-        var passwordCheck = await _userManager.CheckPasswordAsync(user, loginViewModel.Password);
+        bool passwordCheck = await _userManager.CheckPasswordAsync(user, loginViewModel.Password);
         if (!passwordCheck)
         {
             TempData["Error"] = "Invalid login attempt";
             return View(loginViewModel);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
+        SignInResult result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
         if (result.Succeeded)
         {
             return RedirectToAction("Index", "Race");
@@ -76,7 +74,7 @@ public class AccountController : Controller
             return View(registerViewModel);
         }
 
-        var user = await _userManager.FindByEmailAsync(registerViewModel.EmailAddress);
+        AppUser? user = await _userManager.FindByEmailAsync(registerViewModel.EmailAddress);
         if (user != null)
         {
             TempData["Error"] = "Email address is already in use.";
@@ -88,8 +86,8 @@ public class AccountController : Controller
             UserName = registerViewModel.EmailAddress,
             Email = registerViewModel.EmailAddress
         };
-        var newUserResponse = await _userManager.CreateAsync(newUser, registerViewModel.Password);
-
+        
+        IdentityResult newUserResponse = await _userManager.CreateAsync(newUser, registerViewModel.Password);
         if (newUserResponse.Succeeded)
         {
             await _userManager.AddToRoleAsync(newUser, UserRoles.User);
